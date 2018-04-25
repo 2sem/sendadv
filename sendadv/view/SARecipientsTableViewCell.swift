@@ -27,6 +27,7 @@ class SARecipientsTableViewCell: UITableViewCell {
     }
     
     override func setEditing(_ editing: Bool, animated: Bool) {
+        //Hides the switch if this cell is editing
         if self.accessoryView === self.enableSwitch{
             if editing{
                 self.enableSwitch.isHidden = true;
@@ -37,9 +38,9 @@ class SARecipientsTableViewCell: UITableViewCell {
         
         if self.accessoryView === self.enableSwitch{
             if editing{
-//                self.enableSwitch.isHidden = true;
                 self.accessoryType = .disclosureIndicator;
             }else{
+                //Shows the switch again when the editing has been completed
                 self.enableSwitch.isHidden = false;
                 self.enableSwitch.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true;
                 self.enableSwitch.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16).isActive = true;

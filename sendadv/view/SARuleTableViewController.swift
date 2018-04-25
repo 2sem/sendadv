@@ -11,7 +11,7 @@ import UIKit
 class SARuleTableViewController: UITableViewController {
 
     var rule : SARecipientsRule?;
-    lazy var dataController = SAModelController.Default;
+    let dataController = SAModelController.Default;
     class TransactionNames{
         static let Rule = "Rule";
         static let Filter = "Filter";
@@ -31,7 +31,8 @@ class SARuleTableViewController: UITableViewController {
     var editingTarget = "";
     
     override func viewWillAppear(_ animated: Bool) {
-        //        SAModelController.Default.refresh(rule: self.rule!);
+        
+        //Restore original title of navigation item if it was stored
         if self.originalTitle != nil{
             self.navigationItem.title = self.originalTitle;
         }
@@ -40,12 +41,14 @@ class SARuleTableViewController: UITableViewController {
         
         self.updateLabel(target: self.editingTarget);
         
+        // MARK: Begins databases transaction for rule
         self.dataController.beginTransaction(transactionName: TransactionNames.Rule);
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        //Shows informations of rule to view
         self.titleTextField.text = self.rule?.title;
         
         if self.rule == nil{
@@ -55,24 +58,20 @@ class SARuleTableViewController: UITableViewController {
         self.updateLabel(target: TargetNames.Job);
         self.updateLabel(target: TargetNames.Department);
         self.updateLabel(target: TargetNames.Organization);
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
     
     var originalTitle : String?;
-
     
     override func viewWillDisappear(_ animated: Bool) {
+        // MARK: Ends databases transaction for rule
         self.dataController.endTransaction();
         
+        //If user goes to back from this view controller not to go to another new view controller
         guard self.isMovingFromParentViewController else{
             return;
         }
         
+        //Save if something is changed
         if needToSave{
             self.dataController.saveChanges();
         }else{
@@ -85,13 +84,19 @@ class SARuleTableViewController: UITableViewController {
             return;
         }
         
+        //Finds filter by filter type(Job, Department, Organization)
         let filter = (self.rule?.filters?.allObjects as? [SAFilterRule])?.first(where: { (f) -> Bool in
             return f.target == target;
         });
+        
+        //Gets list of keyword in filter
         var list = filter?.includes?.components(separatedBy: ",").filter({ (f) -> Bool in
             return !f.isEmpty;
         }) ?? [];
         var text = "";
+        
+        // MARK: Makes title for 'abc and n others'
+        //Gets first keyword
         if list.count > 0{
             text = list[0];
         }
@@ -100,6 +105,7 @@ class SARuleTableViewController: UITableViewController {
             text = text + "".appendingFormat(" and %@ others".localized(), "\(list.count - 1)");
         }
         
+        //Set text of the keyword label to 'All' If there is no filter or 'all' is activated
         if filter == nil || filter?.all == true{
             text = "All".localized();
         }
@@ -132,6 +138,7 @@ class SARuleTableViewController: UITableViewController {
     var needToSave = false;
     @IBAction func onSave(_ button: UIBarButtonItem) {
         self.applyChange();
+        //Sets flag to end transaction
         self.needToSave = true;
         self.titleTextField.resignFirstResponder();
         self.navigationController?.popViewController(animated: true);
@@ -207,22 +214,19 @@ class SARuleTableViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
-        if let view = segue.destination as? SAFilterTableViewController{
-//            self.dataController.beginTransaction(transactionName: TransactionNames.Filter);
-//            self.dataController.endTransaction();
-
+        if let filterView = segue.destination as? SAFilterTableViewController{
             switch segue.identifier ?? ""{
                 case TargetNames.Job:
-                    view.list = SAContactController.Default.loadJobTitles();
-                    view.navigationItem.title = "\("Job".localized()) \("Rule Setting".localized())";
+                    filterView.list = SAContactController.Default.loadJobTitles();
+                    filterView.navigationItem.title = "\("Job".localized()) \("Rule Setting".localized())";
                     break;
                 case TargetNames.Department:
-                    view.list = SAContactController.Default.loadDepartments();
-                    view.navigationItem.title = "\("Department".localized()) \("Rule Setting".localized())";
+                    filterView.list = SAContactController.Default.loadDepartments();
+                    filterView.navigationItem.title = "\("Department".localized()) \("Rule Setting".localized())";
                     break;
                 case TargetNames.Organization:
-                    view.list = SAContactController.Default.loadOrganizations();
-                    view.navigationItem.title = "\("Orgization".localized()) \("Rule Setting".localized())";
+                    filterView.list = SAContactController.Default.loadOrganizations();
+                    filterView.navigationItem.title = "\("Orgization".localized()) \("Rule Setting".localized())";
                     break;
                 default:
                     break;
@@ -230,9 +234,10 @@ class SARuleTableViewController: UITableViewController {
             
             editingTarget = segue.identifier ?? "";
             
-            view.rule = self.rule;
-            view.target = segue.identifier ?? "";
+            filterView.rule = self.rule;
+            filterView.target = segue.identifier ?? "";
             
+            //Backups original title of navigation item
             self.originalTitle = self.navigationItem.title;
             self.navigationItem.title = nil;
             

@@ -104,10 +104,12 @@ class SAModelController : NSObject{
     }
     
     func saveChanges(){
-        do{
-            try self.context.save();
-        } catch {
-            fatalError("Save failed Error(\(error))");
+        self.context.performAndWait {
+            do{
+                try self.context.save();
+            } catch {
+                fatalError("Save failed Error(\(error))");
+            }
         }
     }
     

@@ -13,6 +13,11 @@ import ContactsUI
 import MBProgressHUD
 import LSExtensions
 
+/**
+ This is unusable
+ This is view controller to input the message and the repeat count of sending
+ Apple does not support sending message programatically on background.
+ */
 class SASendViewController: UIViewController, MFMessageComposeViewControllerDelegate, UITextViewDelegate {
     
     @IBOutlet weak var messageTextView: UITextView!

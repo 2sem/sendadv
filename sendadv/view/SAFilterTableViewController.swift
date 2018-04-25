@@ -12,49 +12,62 @@ class SAFilterTableViewController: UITableViewController {
     let cell_id = "SAFilterTableViewCell";
     let header_id = "headerViewCell";
 
-
     var list : [String] = [];
     var includes : [String] = [];
     var filter : SAFilterRule!;
     var rule : SARecipientsRule!;
 
-    lazy var dataController = SAModelController.Default;
+    let dataController = SAModelController.Default;
     class TransactionNames{
         static let Filter = "Filter";
     }
     var target = "";
     
+    var toggleAllSwitch : UISwitch!{
+        var value : UISwitch?;
+        guard self.tableView != nil else{
+            return value;
+        }
+        
+        guard let header = self.tableView(self.tableView, viewForHeaderInSection: 0) as? UITableViewCell else{
+            return value;
+        }
+        guard let toggleSwitch = header.accessoryView as? UISwitch else{
+            return value;
+        }
+        value = toggleSwitch
+        
+        return value;
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        assert(self.rule != nil, "Rule should be not nil")
         self.dataController.beginTransaction(transactionName: TransactionNames.Filter);
         
-        //find filter
-        let filters = self.rule!.filters?.allObjects as? [SAFilterRule];
+        //Finds filter by filter type
+        let filters = self.rule?.filters?.allObjects as? [SAFilterRule];
         self.filter = [SAFilterRule](filters ?? []).first(where: { (f) -> Bool in
             return f.target == self.target;
         })
         
-        //create filter
+        //Creates filter if there is no filter for the target type
         if self.filter == nil{
             self.filter = SAModelController.Default.createFilterRule(target: self.target);
             self.filter?.owner = self.rule;
             self.filter?.all = true;
             let filters = self.rule?.mutableSetValue(forKey: "filters");
             filters?.add(filter);
-            self.rule.filters = filters;
+            self.rule?.filters = filters;
         }else{
+            //Split keyword1, keyword2, keyword3 to [keyword1, keyword2, keyword3]
             self.includes = (self.filter.includes ?? "").components(separatedBy: ",").filter({ (f) -> Bool in
                 return !f.isEmpty;
             });
         }
         
         self.list = self.list.sorted();
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -76,14 +89,11 @@ class SAFilterTableViewController: UITableViewController {
     
     var isDone = false;
     @IBAction func onDone(_ button: UIBarButtonItem) {
+        //merge keywords with , to store as Database
         self.filter.includes = self.includes.filter({ (f) -> Bool in
             return !f.isEmpty;
         }).joined(separator: ",");
-//        self.dataController.endTransaction();
-
-//        if !(self.filter.owner?.objectID.isTemporaryID ?? true){
-//            SAModelController.Default.saveChanges();
-//        }
+        
         self.isDone = true;
         self.navigationController?.popViewController(animated: true)
     }
@@ -110,9 +120,9 @@ class SAFilterTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cell_id, for: indexPath) as? SAFilterTableViewCell;
 
-        // Configure the cell...
         cell?.textLabel?.textColor = UIColor.white;
         let text = self.list[indexPath.row];
+        //Shows activation state by setting accessoryView
         cell?.accessoryType = self.includes.contains(text) ? .checkmark : .none;
         cell?.textLabel?.text = text;
         
@@ -120,19 +130,28 @@ class SAFilterTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let cell = tableView.cellForRow(at: indexPath) as? SAFilterTableViewCell;
+        guard let cell = tableView.cellForRow(at: indexPath) as? SAFilterTableViewCell else{
+            return;
+        }
         
-        switch cell?.accessoryType ?? .none{
+        switch cell.accessoryType{
             case .checkmark:
-                cell?.accessoryType = .none;
-                let idx = self.includes.index(of: cell?.textLabel?.text ?? "") ?? -1;
+                cell.accessoryType = .none;
+                let idx = self.includes.index(of: cell.textLabel?.text ?? "") ?? -1;
                 if idx >= 0 {
                     self.includes.remove(at: idx);
                 }
                 break;
             case .none:
-                cell?.accessoryType = .checkmark;
-                self.includes.append(cell?.textLabel?.text ?? "");
+                cell.accessoryType = .checkmark;
+                self.includes.append(cell.textLabel?.text ?? "");
+                if self.filter.all {
+                    self.filter.all = false
+                    //self.toggleAllSwitch.isOn = ;
+                    //self.toggleAllSwitch.setOn(false, animated: true);
+                    tableView.reloadData();
+                }
+                self.dataController.saveChanges();
                 break;
             default:
                 break;
