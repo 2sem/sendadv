@@ -55,11 +55,9 @@ class SAFilterTableViewController: UITableViewController {
         //Creates filter if there is no filter for the target type
         if self.filter == nil{
             self.filter = SAModelController.Default.createFilterRule(target: self.target);
-            self.filter?.owner = self.rule;
             self.filter?.all = true;
-            let filters = self.rule?.mutableSetValue(forKey: "filters");
-            filters?.add(filter);
-            self.rule?.filters = filters;
+            self.rule?.addToFilters(self.filter);
+            self.filter?.owner = self.rule;
         }else{
             //Split keyword1, keyword2, keyword3 to [keyword1, keyword2, keyword3]
             self.includes = (self.filter.includes ?? "").components(separatedBy: ",").filter({ (f) -> Bool in

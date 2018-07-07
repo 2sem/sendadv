@@ -208,6 +208,17 @@ class SARuleTableViewController: UITableViewController {
     }
     */
 
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
+        var value = false;
+        guard !(self.navigationController?.topViewController is SAFilterTableViewController) else{
+            return value;
+        }
+        
+        value = true;
+        
+        return value;
+    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation

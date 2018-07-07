@@ -126,11 +126,16 @@ class SAModelController : NSObject{
     
     func endTransaction(){
         print("end transaction. name[\(self.context.undoManager?.undoActionName ?? "")] context[\(self.context.description)]");
-        self.context.undoManager?.endUndoGrouping();
+        if self.context.undoManager?.groupingLevel ?? 0 > 0{
+            self.context.undoManager?.endUndoGrouping();
+        }
     }
     
     func undo(){
         print("undo. name[\(self.context.undoManager?.undoActionName ?? "")] context[\(self.context.description)]");
+        while self.context.undoManager?.groupingLevel ?? 0 > 1{
+            self.context.undoManager?.endUndoGrouping();
+        }
         self.context.undoManager?.undo();
     }
     

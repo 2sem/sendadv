@@ -346,6 +346,10 @@ class SARecipientsTableViewController: UITableViewController, MFMessageComposeVi
 
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         var value = true;
+        guard !(self.navigationController?.topViewController is SARuleTableViewController) else{
+            return false;
+        }
+        
         if identifier == "edit"{
             guard self.tableView.indexPathForSelectedRow != nil else{
                 assertionFailure("Could not get selected rule and move to view for it.")
