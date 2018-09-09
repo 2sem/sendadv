@@ -43,6 +43,8 @@ class SAFilterTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.tableView.hideExtraRows = true;
+        
         assert(self.rule != nil, "Rule should be not nil")
         self.dataController.beginTransaction(transactionName: TransactionNames.Filter);
         

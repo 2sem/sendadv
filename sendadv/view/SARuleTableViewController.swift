@@ -48,6 +48,8 @@ class SARuleTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        self.tableView.hideExtraRows = true;
+        
         //Shows informations of rule to view
         self.titleTextField.text = self.rule?.title;
         

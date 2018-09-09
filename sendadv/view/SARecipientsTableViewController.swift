@@ -47,6 +47,8 @@ class SARecipientsTableViewController: UITableViewController, MFMessageComposeVi
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        self.tableView.hideExtraRows = true;
+        
         self.navigationItem.leftBarButtonItem = self.editButtonItem;
         self.editButtonItem.tintColor = UIColor.yellow;
         self.editButtonItem.possibleTitles = ["abc", "def"];

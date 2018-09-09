@@ -4,6 +4,7 @@
 target 'sendadv' do
   # Comment this line if you're not using Swift and don't want to use dynamic frameworks
   use_frameworks!
+  inhibit_all_warnings!
 
   # Pods for sendadv
   pod 'Firebase/Core'
@@ -12,7 +13,9 @@ target 'sendadv' do
   pod 'UITextView+Placeholder'
   pod 'Material'
   pod 'KakaoOpenSDK';
-  pod 'LSExtensions', :path => '~/Projects/leesam/pods/LSExtensions/src/LSExtensions'
+  pod 'LSExtensions'#, :path => '~/Projects/leesam/pods/LSExtensions/src/LSExtensions'
+  pod 'Fabric'
+  pod 'Crashlytics'
 
   target 'sendadvTests' do
     inherit! :search_paths
